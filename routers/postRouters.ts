@@ -1,4 +1,6 @@
 // @ts-nocheck
+
+import * as db from '../fake-db';
 import express from "express";
 import * as database from "../controller/postController";
 
@@ -23,14 +25,14 @@ router.get("/create", ensureAuthenticated, (req, res) => {
 // Handle post creation
 router.post("/create", ensureAuthenticated, async (req, res) => {
   try {
-  const { title, link, description, subgroup } = req.body;
-  const creator = req.user.id;
-  database.addPost(title, link, creator, description, subgroup);
-  res.redirect('/posts');
-      } catch (error) {
-        console.error('Error creating post:', error);
-        // Handle the error, maybe render an error page or redirect with an error message
-    }
+    const { title, link, description, subgroup } = req.body;
+    const creator = req.user.id;
+    database.addPost(title, link, creator, description, subgroup);
+    res.redirect('/posts');
+  } catch (error) {
+    console.error('Error creating post:', error);
+    // Handle the error, maybe render an error page or redirect with an error message
+  }
 });
 
 // Display individual post
@@ -39,20 +41,36 @@ router.get("/show/:postid", async (req, res) => {
   res.render("individualPost", { post });
 });
 
-// Edit post form
-router.get("/edit/:postid", ensureAuthenticated, async (req, res) => {
-  const post = database.getPost(req.params.postid);
-  if (req.user.id !== post.creator.id) {
+// GET route for edit post form
+router.get('/edit/:postid', ensureAuthenticated, (req, res) => {
+  const post = db.getPost(req.params.postid);
+
+  if (req.user.id !== post.creator) {
     return res.status(403).send("Unauthorized");
   }
-  res.render("editPost", { post });
+
+  res.render('editPost', { post });
 });
 
-// Handle post editing
-router.post("/edit/:postid", ensureAuthenticated, async (req, res) => {
-  const { title, link, description, subgroup } = req.body;
-  database.editPost(req.params.postid, { title, link, description, subgroup });
-  res.redirect(`/posts/show/${req.params.postid}`);
+
+
+router.post('/edit/:postid', ensureAuthenticated, (req, res) => {
+
+  try {
+    const { title, link, description, subgroup } = req.body;
+    const postId = parseInt(req.params.postid);
+
+    const post = db.getPost(postId);
+    if (req.user.id !== post.creator) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    db.editPost(postId, { title, link, description, subgroup });
+    res.redirect('/posts/show/' + postId); // Redirect to a suitable location after editing
+  } catch (error) {
+    console.error('Error updating post:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 // Confirm delete post
@@ -82,11 +100,51 @@ router.get('/posts/:id', (req, res) => {
   const postId = parseInt(req.params.id);
   const post = getPost(postId);
   if (post) {
-      res.render('someView', { post });  // Render the view with the post data
+    res.render('someView', { post });  // Render the view with the post data
   } else {
-      res.status(404).send('Post not found');
+    res.status(404).send('Post not found');
   }
 });
+
+router.get('/edit/:postid', ensureAuthenticated, (req, res) => {
+  const post = db.getPost(req.params.postid);
+
+  // Check if the logged-in user is the creator of the post
+  if (req.user.id !== post.creator) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  router.get('/create', ensureAuthenticated, (req, res) => {
+    res.render('createPost'); // Render the createPost.ejs template
+  });
+
+  router.post('/create', ensureAuthenticated, (req, res) => {
+    const { title, link, description, subgroup } = req.body;
+    const creatorId = req.user.id; // Assuming you have the user's ID in req.user
+
+    db.addPost(title, link, creatorId, description, subgroup);
+    res.redirect('/some-redirect-path'); // Redirect after creating the post
+  });
+
+
+  res.render('editPost', { post }); // Render the editPost.ejs template with post data
+});
+
+router.post('/edit/:postid', ensureAuthenticated, (req, res) => {
+  const { title, link, description, subgroup } = req.body;
+
+  const post = db.getPost(req.params.postid);
+  if (req.user.id !== post.creator) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  db.editPost(req.params.postid, { title, link, description, subgroup });
+  res.redirect('/some-redirect-path'); // Redirect to a suitable location
+});
+
+
+
+
 
 
 export default router;

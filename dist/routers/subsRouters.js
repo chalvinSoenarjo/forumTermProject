@@ -38,14 +38,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db = __importStar(require("../fake-db"));
 const router = express_1.default.Router();
-router.get("/list", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const subs = db.getSubs();
-    res.render("subsList", { subs });
-}));
+router.get('/list', (req, res) => {
+    let subgroups = new Set();
+    Object.values(db.posts).forEach(post => subgroups.add(post.subgroup)); // Use db.posts
+    res.render('subgroupsList', { subgroups: Array.from(subgroups) });
+});
 router.get("/show/:subname", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const subname = req.params.subname;
-    const posts = db.getPosts(20, subname);
+    const posts = db.getPosts(20, subname); // This assumes db.getPosts can filter by subgroup
     res.render("subPosts", { posts });
 }));
+// Removed the duplicate route for '/show/:subname'
 exports.default = router;
 //# sourceMappingURL=subsRouters.js.map

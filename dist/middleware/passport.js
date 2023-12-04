@@ -29,13 +29,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const passport_1 = __importDefault(require("passport"));
 const passport_local_1 = require("passport-local");
 const db = __importStar(require("../fake-db"));
-passport_1.default.use(new passport_local_1.Strategy((username, password, done) => {
+passport_1.default.use(new passport_local_1.Strategy({
+    usernameField: 'uname',
+    passwordField: 'password'
+}, (username, password, done) => {
+    console.log(`Username: ${username}, Password: ${password}`); // Debug print
     const user = db.getUserByUsername(username);
-    if (!user) {
-        return done(null, false, { message: 'Username not found' });
-    }
-    if (user.password !== password) {
-        return done(null, false, { message: 'Incorrect password' });
+    if (!user || user.password !== password) {
+        return done(null, false, { message: 'Incorrect username or password.' });
     }
     return done(null, user);
 }));

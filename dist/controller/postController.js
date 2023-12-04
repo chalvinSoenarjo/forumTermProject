@@ -23,8 +23,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPosts = exports.getSubs = void 0;
+exports.getPost = exports.addPost = exports.getPosts = exports.getSubs = void 0;
 const db = __importStar(require("../fake-db"));
+let posts = {}; // Assuming posts are stored in an object keyed by post ID
 // Function to get a list of all subgroups
 function getSubs() {
     const subgroups = new Set();
@@ -46,4 +47,29 @@ function getPosts(n, sub) {
 exports.getPosts = getPosts;
 // Add other necessary functions here (e.g., addPost, getPost, etc.)
 // Make sure to export them
+// Function to generate a unique ID for a new post (simple implementation)
+function generatePostId() {
+    return Math.max(0, ...Object.keys(db.posts).map(Number)) + 1;
+}
+// addPost function implementation
+const addPost = (title, link, creator, description, subgroup) => {
+    const postId = generatePostId();
+    const newPost = {
+        id: postId,
+        title,
+        link,
+        description,
+        creator,
+        subgroup,
+        timestamp: Date.now(), // Adding a timestamp for the post
+    };
+    // Add the new post to the db.posts object
+    db.posts[postId] = newPost;
+};
+exports.addPost = addPost;
+// Function to get a single post by ID
+function getPost(id) {
+    return db.posts[id]; // Retrieve the post with the given ID from the database
+}
+exports.getPost = getPost;
 //# sourceMappingURL=postController.js.map

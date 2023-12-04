@@ -3,3 +3,10 @@
   justify-content: space-between;
   align-items: flex-start;
 }
+
+
+.individualPost {
+  border: 1px solid #ccc; /* Light grey border */
+  padding: 10px;
+  margin-bottom: 15px;
+}

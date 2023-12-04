@@ -1,0 +1,7 @@
+<!-- subgroupPosts.ejs -->
+<h1>Posts in <%= subname %></h1>
+<ul>
+    <% posts.forEach(function(post) { %>
+        <li><a href="/posts/show/<%= post.id %>"><%= post.title %></a> by User <%= post.creator %></li>
+    <% }); %>
+</ul>

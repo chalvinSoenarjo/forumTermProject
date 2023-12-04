@@ -224,6 +224,14 @@ export function validateUser(uname: string, password: string): User | null {
   return user && user.password === password ? user : null;
 }
 
+// Assuming you have a users object
+
+
+export const addUser = (uname: string, password: string) => {
+  const userId = Object.keys(users).length + 1;
+  users[userId] = { id: userId, uname, password };
+};
+
 export {
   getUser,
   getUserByUsername,

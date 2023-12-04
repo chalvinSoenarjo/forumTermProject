@@ -1,12 +1,8 @@
 
-
-
-
-
-
 import express, { Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import { IVerifyOptions } from 'passport-local';
+import * as db from '../fake-db';
 
 const router = express.Router();
 
@@ -27,6 +23,18 @@ router.post('/login', passport.authenticate('local', {
 router.get("/logout", (req, res) => {
     req.logout(() => {});
     res.redirect("/");
+});
+
+router.get('/signup', (req, res) => {
+    res.render('signup'); // Render the signup form
+});
+
+
+router.post('/signup', (req, res) => {
+    const { uname, password } = req.body;
+    // Implement logic to add user to your database
+    db.addUser(uname, password); // Or handle the logic as needed
+    res.redirect('/auth/login'); // Redirect to login page after signup
 });
 
 export default router;

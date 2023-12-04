@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 8000;
 app.set("view engine", "ejs");
 app.use(express_1.default.static("public"));
 app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.urlencoded({ extended: true })); // Parses urlencoded bodies
 app.use((0, express_session_1.default)({
     secret: "yourSecretKey",
     resave: false,
@@ -27,6 +27,9 @@ app.use("/", indexRoute_1.default);
 app.use("/auth", authRoute_1.default);
 app.use("/posts", postRouters_1.default);
 app.use("/subs", subsRouters_1.default);
+app.get('/desired-success-url', (req, res) => {
+    res.send('Login successful. Welcome to the desired success page!');
+});
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });

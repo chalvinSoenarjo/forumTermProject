@@ -1,48 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.classless.min.css"
-    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.classless.min.css" />
     <link href="/css/style.css" rel="stylesheet" />
     <title>Homepage</title>
-  </head>
-  <body>
+</head>
+<body>
+    <nav>
+        <!-- other navigation links -->
+        <a href="/auth/signup">Signup</a>
+    </nav>
     <main>
-      <div class="authOptions">
-        <h1>Homepage</h1>
-        <% if (!user) { %>
-        <a role="button" href="/auth/login">Login</a>
-        <% } else { %>
-        <a role="button" href="/auth/logout">Logout</a>
-        <% } %>
-      </div>
-      <h2>Welcome, <%= user?.uname || "Visitor" %></h2>
-      <div>
-        <p>All Posts</p>
-        <% posts.forEach(post => { %>
-        <div class="individualPost">
-          <a href="/posts/show/<%=post.id%>"><%= post.title %></a>
-          <p><%= post.description %></p>
+        <div class="authOptions">
+            <h1>Homepage</h1>
+            <% if (!user) { %>
+                <a role="button" href="/auth/login">Login</a>
+            <% } else { %>
+                <a role="button" href="/auth/logout">Logout</a>
+            <% } %>
         </div>
-        <% }) %>
-      </div>
+        <h2>Welcome, <%= user?.uname || "Visitor" %></h2>
+        <div>
+            <p>All Posts</p>
+            <% posts.forEach(post => { %>
+                <div class="individualPost">
+                    <a href="/posts/show/<%= post.id %>"><%= post.title %></a>
+                    <p><%= post.description %></p>
+                    <!-- Check if logged-in user is the creator of the post -->
+                    <% if (user && user.id === post.creator) { %>
+                        <a href="/posts/edit/<%= post.id %>">Edit</a>
+                       
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
 
-      <div>
-        <a href="/subs/list">Subgroups</a>
-      </div>
+        <div>
+            <a href="/subs/list">Subgroups</a>
+        </div>
 
-      <div>
-        <a role="button" href="/posts/create">Create Post</a>
-      </div>
-      <p style="color: rgb(197, 172, 172)">
-        😦 Heads up...you probably want to hide the Create Post button above for
-        non-logged-in users!
-      </p>
+        <% if (user) { %>
+            <div>
+                <a role="button" href="/posts/create">Create Post</a>
+            </div>
+        <% } %>
     </main>
-  </body>
+</body>
 </html>

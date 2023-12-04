@@ -1,7 +1,7 @@
 "use strict";
 // fake-db.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.validateUser = exports.posts = void 0;
+exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.addUser = exports.validateUser = exports.posts = void 0;
 const users = {
     1: {
         id: 1,
@@ -173,4 +173,10 @@ function validateUser(uname, password) {
     return user && user.password === password ? user : null;
 }
 exports.validateUser = validateUser;
+// Assuming you have a users object
+const addUser = (uname, password) => {
+    const userId = Object.keys(users).length + 1;
+    users[userId] = { id: userId, uname, password };
+};
+exports.addUser = addUser;
 //# sourceMappingURL=fake-db.js.map
