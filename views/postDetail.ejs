@@ -1,26 +1,62 @@
 <!-- Within the postDetail.ejs file -->
-<form action="/posts/comment-create/<%= post.id %>" method="post">
+<form id="comment-form" action="/posts/comment-create/101" method="post">
     <textarea name="description" placeholder="Your comment"></textarea>
     <button type="submit">Add Comment</button>
-
-
-
-
 </form>
 
 <h3>Comments:</h3>
-<% if (post.comments) { %>
-  <% post.comments.forEach(comment => { %>
-      <div class="comment">
-          <p><%= comment.description %></p>
-          <p>Comment by User ID: <%= comment.creator %></p>
-      </div>
-  <% }); %>
-<% } else { %>
-  <p>No comments yet.</p>
-<% } %>
-
+<div class="comments-section">
+    <% if (post.comments && post.comments.length > 0) { %>
+        <% post.comments.forEach(comment => { %>
+            <div class="comment">
+                <p><%= comment.description %></p>
+                <p>Comment by User ID: <%= comment.creator %></p>
+            </div>
+        <% }); %>
+    <% } else { %>
+        <p>No comments yet.</p>
+    <% } %>
+</div>
 
 <a role="button" href="/posts">Home</a>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById('comment-form');
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
 
+            const postId = "<%= post.id %>"; // From your EJS variable
+            const commentText = document.querySelector('textarea[name="description"]').value;
+            // Implement logic to get the user's ID
+            const creatorId = /* Your logic to get the user's ID */;
+
+            fetch(`/posts/comment-create/${postId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({description: commentText, creator: creatorId})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const commentsSection = document.querySelector('.comments-section');
+                    const noCommentsP = commentsSection.querySelector('p');
+                    if (noCommentsP && noCommentsP.textContent === 'No comments yet.') {
+                        noCommentsP.remove();
+                    }
+
+                    const newCommentDiv = document.createElement('div');
+                    newCommentDiv.className = 'comment';
+                    newCommentDiv.innerHTML = `<p>${commentText}</p><p>Comment by User ID: ${creatorId}</p>`;
+                    commentsSection.appendChild(newCommentDiv);
+
+                    document.querySelector('textarea[name="description"]').value = '';
+                } else {
+                    // Handle error or unsuccessful operation
+                    console.error('Failed to add comment');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>

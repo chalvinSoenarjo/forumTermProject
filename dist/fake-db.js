@@ -1,7 +1,7 @@
 "use strict";
 // fake-db.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.voteOnPost = exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.addUser = exports.validateUser = exports.posts = void 0;
+exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.voteOnPost = exports.addUser = exports.validateUser = exports.posts = void 0;
 const users = {
     1: {
         id: 1,
@@ -197,32 +197,37 @@ const addUser = (uname, password) => {
     users[userId] = { id: userId, uname, password };
 };
 exports.addUser = addUser;
-function voteOnPost(post_id, user_id, value) {
-    // Check if the user has already voted on the post
-    const existingVote = votes.find(vote => vote.user_id === user_id && vote.post_id === post_id);
+function voteOnPost(postId, userId, value) {
+    // Assuming you have an array 'votes' storing each vote as { user_id, post_id, value }
+    let existingVote = votes.find(vote => vote.user_id === userId && vote.post_id === postId);
     if (existingVote) {
-        // Update the existing vote if it's different
-        if (existingVote.value !== value) {
-            existingVote.value = value;
+        // User already voted on this post
+        if (existingVote.value === value) {
+            // User is repeating the same vote, consider this as unvote
+            votes = votes.filter(vote => !(vote.user_id === userId && vote.post_id === postId));
         }
         else {
-            // Remove the vote if it's the same (unvote)
-            // Assuming 'votes' is an array of vote objects
-            votes = votes.filter(vote => !(vote.user_id === user_id && vote.post_id === post_id));
+            // User is changing their vote
+            existingVote.value = value;
         }
     }
     else {
-        // Add a new vote
-        votes.push({ user_id, post_id, value });
+        // This is a new vote
+        votes.push({ user_id: userId, post_id: postId, value: value });
     }
-    // Recalculate the total votes for the post
-    const postVotes = votes.filter(vote => vote.post_id === post_id);
-    const totalVotes = postVotes.reduce((acc, vote) => acc + vote.value, 0);
     // Update the post's vote count
-    const post = exports.posts[post_id];
+    const postVotes = votes.filter(vote => vote.post_id === postId);
+    const totalVotes = postVotes.reduce((acc, vote) => acc + vote.value, 0);
+    // Assuming you have a posts object where each post is stored with its ID as the key
+    const post = exports.posts[postId];
     if (post) {
         post.votes = totalVotes;
     }
+    else {
+        throw new Error("Post not found");
+    }
+    // Return the updated post
+    return post;
 }
 exports.voteOnPost = voteOnPost;
 //# sourceMappingURL=fake-db.js.map

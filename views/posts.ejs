@@ -41,15 +41,15 @@
           <!-- Voting Section -->
           <% if (user) { %> <!-- Show voting only if user is logged in -->
             <div class="voting-section">
-              <form action="/vote/<%= post.id %>" method="post">
-                <button name="vote" value="1" type="submit">Upvote</button>
-                <button name="vote" value="-1" type="submit">Downvote</button>
+              <form action="/posts/vote/<%= post.id %>" method="post">
+                <button type="submit" name="vote" value="1">Upvote</button>
+                <button type="submit" name="vote" value="-1">Downvote</button>
               </form>
             </div>
           <% } %>
 
           <!-- Add Comment button -->
-          <a href="/posts/comment/<%= post.id %>" class="add-comment-button">Add Comment</a>
+          <a href="/posts/show/<%= post.id %>" class="add-comment-button">Add Comment</a>
 
           <!-- Comments section -->
           <div class="comments-section">

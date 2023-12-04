@@ -181,11 +181,53 @@ router.post('/vote/:postId', checkAuth_1.ensureAuthenticated, (req, res) => __aw
         res.status(500).send('An error occurred');
     }
 }));
-router.post('/vote/:postId', (req, res) => {
+// In postRouters.ts
+router.post('/vote/:postId', checkAuth_1.ensureAuthenticated, (req, res) => {
+    const postId = parseInt(req.params.postId);
+    const userId = req.user.id; // Assuming you have the user's ID in req.user
+    const voteValue = parseInt(req.body.vote); // +1 for upvote, -1 for downvote
+    // This function should handle the logic of voting, including checking if the user already voted
+    db.voteOnPost(postId, userId, voteValue)
+        .then(() => {
+        // Redirect back to the post or wherever appropriate
+        res.redirect(`/posts/show/${postId}`);
+    })
+        .catch(error => {
+        // Handle errors (e.g., post not found, database errors)
+        console.error(error);
+        res.status(500).send("Error processing your vote");
+    });
+});
+router.post('/posts/vote/:postId', (req, res) => {
     const postId = req.params.postId;
-    // ... your vote handling logic ...
-    // Redirect after handling the vote
-    res.redirect(`/posts/show/${postId}`);
+    const voteValue = req.body.vote;
+    // Process the vote here
+    // Redirect to the desired page after voting
+    res.redirect('/auth/posts');
+});
+router.post('/posts/comment-create/:postId', (req, res) => {
+    const postId = parseInt(req.params.postId);
+    const { description, creator } = req.body;
+    // Assuming you have an array or a similar structure to store comments
+    const newComment = {
+        id: generateNewCommentId(), // Function to generate a unique comment ID
+        post_id: postId,
+        creator: creator,
+        description: description,
+        timestamp: new Date().getTime() // Current timestamp
+    };
+    // Add the new comment to your data store
+    comments.push(newComment);
+    // Optionally, if you need to update the post with the new comment
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+        if (!post.comments) {
+            post.comments = [];
+        }
+        post.comments.push(newComment);
+    }
+    // Return a response
+    res.json({ success: true, comment: newComment });
 });
 exports.default = router;
 //# sourceMappingURL=postRouters.js.map
