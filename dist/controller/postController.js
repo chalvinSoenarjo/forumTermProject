@@ -23,9 +23,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPost = exports.addPost = exports.getPosts = exports.getSubs = void 0;
+exports.getPost = exports.getPosts = exports.getSubs = void 0;
 const db = __importStar(require("../fake-db"));
-let posts = {}; // Assuming posts are stored in an object keyed by post ID
+const fake_db_1 = require("../fake-db");
 // Function to get a list of all subgroups
 function getSubs() {
     const subgroups = new Set();
@@ -52,21 +52,21 @@ function generatePostId() {
     return Math.max(0, ...Object.keys(db.posts).map(Number)) + 1;
 }
 // addPost function implementation
-const addPost = (title, link, creator, description, subgroup) => {
-    const postId = generatePostId();
-    const newPost = {
-        id: postId,
+function addPost(title, link, creator, description, subgroup) {
+    let id = Math.max(...Object.keys(fake_db_1.posts).map(Number)) + 1;
+    let post = {
+        id,
         title,
         link,
         description,
         creator,
         subgroup,
-        timestamp: Date.now(), // Adding a timestamp for the post
+        timestamp: Date.now(),
+        votes: 0, // Ensure this line is included
     };
-    // Add the new post to the db.posts object
-    db.posts[postId] = newPost;
-};
-exports.addPost = addPost;
+    fake_db_1.posts[id] = post;
+    return post;
+}
 // Function to get a single post by ID
 function getPost(id) {
     return db.posts[id]; // Retrieve the post with the given ID from the database

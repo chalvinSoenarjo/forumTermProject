@@ -40,6 +40,8 @@ const db = __importStar(require("../fake-db"));
 const express_1 = __importDefault(require("express"));
 const database = __importStar(require("../controller/postController"));
 const checkAuth_1 = require("../middleware/checkAuth");
+// In postRouters.ts
+const fake_db_1 = require("../fake-db"); // Adjust the path as needed
 const router = express_1.default.Router();
 // List posts
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -153,6 +155,37 @@ router.post('/edit/:postid', checkAuth_1.ensureAuthenticated, (req, res) => {
     }
     db.editPost(req.params.postid, { title, link, description, subgroup });
     res.redirect('/some-redirect-path'); // Redirect to a suitable location
+});
+router.post('/vote/:postid', checkAuth_1.ensureAuthenticated, (req, res) => {
+    const postId = parseInt(req.params.postid);
+    const userId = req.user.id; // Assuming you have the user's ID in req.user
+    const voteValue = parseInt(req.body.vote); // Expecting '1' for upvote, '-1' for downvote
+    db.voteOnPost(postId, userId, voteValue);
+    res.redirect('/posts/show/' + postId); // Redirect back to the post
+});
+// Example usage in postRouters.ts
+router.post('/some-route', (req, res) => {
+    // ...
+    (0, fake_db_1.voteOnPost)(postId, userId, voteValue);
+    // ...
+});
+router.post('/vote/:postId', checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // ... async operation ...
+        yield (0, fake_db_1.voteOnPost)(postId, userId, voteValue);
+        // ... other code ...
+    }
+    catch (error) {
+        // Handle error
+        console.error(error);
+        res.status(500).send('An error occurred');
+    }
+}));
+router.post('/vote/:postId', (req, res) => {
+    const postId = req.params.postId;
+    // ... your vote handling logic ...
+    // Redirect after handling the vote
+    res.redirect(`/posts/show/${postId}`);
 });
 exports.default = router;
 //# sourceMappingURL=postRouters.js.map

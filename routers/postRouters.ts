@@ -8,6 +8,10 @@ import { ensureAuthenticated } from "../middleware/checkAuth";
 
 import * as postController from "../controller/postController";
 
+// In postRouters.ts
+import { voteOnPost } from '../fake-db'; // Adjust the path as needed
+
+
 const router = express.Router();
 
 // List posts
@@ -150,9 +154,42 @@ router.post('/edit/:postid', ensureAuthenticated, (req, res) => {
   res.redirect('/some-redirect-path'); // Redirect to a suitable location
 });
 
+router.post('/vote/:postid', ensureAuthenticated, (req, res) => {
+  const postId = parseInt(req.params.postid);
+  const userId = req.user.id; // Assuming you have the user's ID in req.user
+  const voteValue = parseInt(req.body.vote); // Expecting '1' for upvote, '-1' for downvote
+
+  db.voteOnPost(postId, userId, voteValue);
+
+  res.redirect('/posts/show/' + postId); // Redirect back to the post
+});
+
+// Example usage in postRouters.ts
+router.post('/some-route', (req, res) => {
+  // ...
+  voteOnPost(postId, userId, voteValue);
+  // ...
+});
 
 
+router.post('/vote/:postId', ensureAuthenticated, async (req, res) => {
+  try {
+    // ... async operation ...
+    await voteOnPost(postId, userId, voteValue);
+    // ... other code ...
+  } catch (error) {
+    // Handle error
+    console.error(error);
+    res.status(500).send('An error occurred');
+  }
+});
 
 
+router.post('/vote/:postId', (req, res) => {
+  const postId = req.params.postId;
+  // ... your vote handling logic ...
 
+  // Redirect after handling the vote
+  res.redirect(`/posts/show/${postId}`);
+});
 export default router;

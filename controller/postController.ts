@@ -1,10 +1,13 @@
  import * as db from "../fake-db";
+ import { posts } from "../fake-db";
 
- let posts = {}; // Assuming posts are stored in an object keyed by post ID
+
+
+
 
 
 // Define an interface for a post
-interface Post {
+export interface Post {
   id: number;
   title: string;
   link: string;
@@ -12,7 +15,9 @@ interface Post {
   creator: number;
   subgroup: string;
   timestamp: number;
+  votes: number; // Ensure this is included
 }
+
 
 // Function to get a list of all subgroups
 export function getSubs() {
@@ -46,21 +51,22 @@ function generatePostId(): number {
 
 
 // addPost function implementation
-export const addPost = (title: string, link: string, creator: number, description: string, subgroup: string) => {
-  const postId = generatePostId();
-  const newPost: Post = {
-      id: postId,
-      title,
-      link,
-      description,
-      creator,
-      subgroup,
-      timestamp: Date.now(), // Adding a timestamp for the post
+function addPost(title: string, link: string, creator: number, description: string, subgroup: string): Post {
+  let id = Math.max(...Object.keys(posts).map(Number)) + 1;
+  let post: Post = {
+    id,
+    title,
+    link,
+    description,
+    creator,
+    subgroup,
+    timestamp: Date.now(),
+    votes: 0, // Ensure this line is included
   };
+  posts[id] = post;
+  return post;
+}
 
-  // Add the new post to the db.posts object
-  db.posts[postId] = newPost;
-};
 
 // Function to get a single post by ID
 export function getPost(id: number): Post | undefined {

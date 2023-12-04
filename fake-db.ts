@@ -19,7 +19,8 @@ interface Post {
   timestamp: number;
   comments?: Comment[]; // Detailed comments
   detailedComments?: Comment[]; // Add this line
-  
+  votes: number;
+
 
 
 }
@@ -62,7 +63,11 @@ const users: Record<number, User> = {
   },
 };
 
-export const posts: Record<number, Post> = {
+
+
+
+
+export let posts: Record<number, Post> = {
   101: {
     id: 101,
     title: "Mochido opens its new location in Coquitlam this week",
@@ -71,6 +76,7 @@ export const posts: Record<number, Post> = {
     creator: 1,
     subgroup: "food",
     timestamp: 1643648446955,
+    votes: 0, // Add this line
   },
   102: {
     id: 102,
@@ -80,6 +86,7 @@ export const posts: Record<number, Post> = {
     creator: 4,
     subgroup: "coding",
     timestamp: 1642611742010,
+    votes: 0, // Add this line
   },
 
   103: {
@@ -90,6 +97,7 @@ export const posts: Record<number, Post> = {
     creator: 4,
     subgroup: "technology",
     timestamp: 1642611742023,
+    votes: 0, // Add this line
   },
 };
 
@@ -119,7 +127,7 @@ const comments: Comment[] = [
 
 
 
-const votes: Vote[] = [
+let votes: Vote[] = [
   { user_id: 2, post_id: 101, value: +1 },
   { user_id: 3, post_id: 101, value: +1 },
   { user_id: 4, post_id: 101, value: +1 },
@@ -183,7 +191,7 @@ function decoratePost(post: Post): Post {
 function getPosts(n: number = 5, sub?: string): Post[] {
   let allPosts = Object.values(posts);
   if (sub) {
-      allPosts = allPosts.filter(post => post.subgroup === sub);
+    allPosts = allPosts.filter(post => post.subgroup === sub);
   }
   allPosts.sort((a, b) => b.timestamp - a.timestamp);
   return allPosts.slice(0, n).map(post => decoratePost(post));
@@ -194,7 +202,7 @@ function getPosts(n: number = 5, sub?: string): Post[] {
 function getPost(id: number): Post | undefined {
   let post = posts[id];
   if (post) {
-      return decoratePost(post);
+    return decoratePost(post);
   }
   return undefined;
 }
@@ -210,6 +218,7 @@ function addPost(title: string, link: string, creator: number, description: stri
     creator,
     subgroup,
     timestamp: Date.now(),
+    votes: 0, // Ensure this line is included
   };
   posts[id] = post;
   return post;
@@ -265,6 +274,40 @@ export const addUser = (uname: string, password: string) => {
   users[userId] = { id: userId, uname, password };
 };
 
+ function voteOnPost(post_id: number, user_id: number, value: number): void {
+  // Check if the user has already voted on the post
+  const existingVote = votes.find(vote => vote.user_id === user_id && vote.post_id === post_id);
+
+  if (existingVote) {
+    // Update the existing vote if it's different
+    if (existingVote.value !== value) {
+      existingVote.value = value;
+    } else {
+      // Remove the vote if it's the same (unvote)
+      // Assuming 'votes' is an array of vote objects
+      votes = votes.filter(vote => !(vote.user_id === user_id && vote.post_id === post_id));
+
+
+    }
+  } else {
+    // Add a new vote
+    votes.push({ user_id, post_id, value });
+  }
+
+  // Recalculate the total votes for the post
+  const postVotes = votes.filter(vote => vote.post_id === post_id);
+  const totalVotes = postVotes.reduce((acc, vote) => acc + vote.value, 0);
+
+  // Update the post's vote count
+  const post = posts[post_id];
+  if (post) {
+    post.votes = totalVotes;
+  }
+}
+
+
+
+
 export {
   getUser,
   getUserByUsername,
@@ -276,4 +319,5 @@ export {
   getSubs,
   addComment,
   getVotesForPost,
+  voteOnPost,
 };

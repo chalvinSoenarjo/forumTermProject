@@ -10,7 +10,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@prisma/client": "^4.11.0",
-    "body-parser": "^1.20.1",
+    "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "ejs": "^3.1.8",

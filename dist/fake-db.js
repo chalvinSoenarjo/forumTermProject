@@ -1,7 +1,7 @@
 "use strict";
 // fake-db.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.addUser = exports.validateUser = exports.posts = void 0;
+exports.voteOnPost = exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.addUser = exports.validateUser = exports.posts = void 0;
 const users = {
     1: {
         id: 1,
@@ -33,6 +33,7 @@ exports.posts = {
         creator: 1,
         subgroup: "food",
         timestamp: 1643648446955,
+        votes: 0, // Add this line
     },
     102: {
         id: 102,
@@ -42,6 +43,7 @@ exports.posts = {
         creator: 4,
         subgroup: "coding",
         timestamp: 1642611742010,
+        votes: 0, // Add this line
     },
     103: {
         id: 103,
@@ -51,6 +53,7 @@ exports.posts = {
         creator: 4,
         subgroup: "technology",
         timestamp: 1642611742023,
+        votes: 0, // Add this line
     },
 };
 // const comments: Record<number, Comment> = {
@@ -72,7 +75,7 @@ const comments = [
     },
     // Other comments...
 ];
-const votes = [
+let votes = [
     { user_id: 2, post_id: 101, value: +1 },
     { user_id: 3, post_id: 101, value: +1 },
     { user_id: 4, post_id: 101, value: +1 },
@@ -95,8 +98,15 @@ function decoratePost(post) {
     var _a, _b;
     const decoratedPost = Object.assign(Object.assign({}, post), { creatorName: (_b = (_a = users[post.creator]) === null || _a === void 0 ? void 0 : _a.uname) !== null && _b !== void 0 ? _b : 'Unknown' });
     if (post.comments) {
-        decoratedPost.detailedComments = post.comments.flatMap(commentId => {
-            const comment = comments.find(comment => (comment === null || comment === void 0 ? void 0 : comment.id) === commentId);
+        decoratedPost.detailedComments = post.comments
+            .filter(commentId => typeof commentId === 'number')
+            .flatMap(commentId => {
+            // Ensure commentId is numeric
+            const numericCommentId = Number(commentId);
+            if (isNaN(numericCommentId)) {
+                return [];
+            }
+            const comment = comments.find(comment => comment.id === numericCommentId);
             return comment ? [comment] : [];
         });
     }
@@ -133,6 +143,7 @@ function addPost(title, link, creator, description, subgroup) {
         creator,
         subgroup,
         timestamp: Date.now(),
+        votes: 0, // Ensure this line is included
     };
     exports.posts[id] = post;
     return post;
@@ -186,4 +197,32 @@ const addUser = (uname, password) => {
     users[userId] = { id: userId, uname, password };
 };
 exports.addUser = addUser;
+function voteOnPost(post_id, user_id, value) {
+    // Check if the user has already voted on the post
+    const existingVote = votes.find(vote => vote.user_id === user_id && vote.post_id === post_id);
+    if (existingVote) {
+        // Update the existing vote if it's different
+        if (existingVote.value !== value) {
+            existingVote.value = value;
+        }
+        else {
+            // Remove the vote if it's the same (unvote)
+            // Assuming 'votes' is an array of vote objects
+            votes = votes.filter(vote => !(vote.user_id === user_id && vote.post_id === post_id));
+        }
+    }
+    else {
+        // Add a new vote
+        votes.push({ user_id, post_id, value });
+    }
+    // Recalculate the total votes for the post
+    const postVotes = votes.filter(vote => vote.post_id === post_id);
+    const totalVotes = postVotes.reduce((acc, vote) => acc + vote.value, 0);
+    // Update the post's vote count
+    const post = exports.posts[post_id];
+    if (post) {
+        post.votes = totalVotes;
+    }
+}
+exports.voteOnPost = voteOnPost;
 //# sourceMappingURL=fake-db.js.map
