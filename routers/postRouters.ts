@@ -22,10 +22,15 @@ router.get("/create", ensureAuthenticated, (req, res) => {
 
 // Handle post creation
 router.post("/create", ensureAuthenticated, async (req, res) => {
+  try {
   const { title, link, description, subgroup } = req.body;
   const creator = req.user.id;
   database.addPost(title, link, creator, description, subgroup);
   res.redirect('/posts');
+      } catch (error) {
+        console.error('Error creating post:', error);
+        // Handle the error, maybe render an error page or redirect with an error message
+    }
 });
 
 // Display individual post
@@ -72,5 +77,16 @@ router.post("/comment-create/:postid", ensureAuthenticated, async (req, res) => 
   database.addComment(req.params.postid, creator, description);
   res.redirect(`/posts/show/${req.params.postid}`);
 });
+
+router.get('/posts/:id', (req, res) => {
+  const postId = parseInt(req.params.id);
+  const post = getPost(postId);
+  if (post) {
+      res.render('someView', { post });  // Render the view with the post data
+  } else {
+      res.status(404).send('Post not found');
+  }
+});
+
 
 export default router;

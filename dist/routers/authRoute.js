@@ -6,14 +6,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const passport_1 = __importDefault(require("../middleware/passport"));
 const router = express_1.default.Router();
-router.get("/login", (req, res) => {
-    res.render("../views/login");
+router.get('/login', (req, res) => {
+    res.render('login', { message: '' }); // Ensure 'message' is defined, even if it's an empty string
 });
-router.post("/login", passport_1.default.authenticate("local", {
-    successRedirect: "/posts", // Redirect here after successful login
-    failureRedirect: "/auth/login", // Redirect back to login on failure
-    failureFlash: false // Set this to true if you're using flash messages
-}));
+// Modified login route
+router.post('/login', (req, res, next) => {
+    passport_1.default.authenticate('local', (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
+        if (!user) {
+            // User not found or password incorrect
+            return res.render('login', { message: info.message });
+        }
+        req.logIn(user, (err) => {
+            if (err) {
+                return next(err);
+            }
+            return res.redirect('/posts');
+        });
+    })(req, res, next);
+});
 router.get("/logout", (req, res) => {
     req.logout(() => { });
     res.redirect("/");

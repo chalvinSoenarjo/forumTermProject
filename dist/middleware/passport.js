@@ -31,10 +31,13 @@ const passport_local_1 = require("passport-local");
 const db = __importStar(require("../fake-db"));
 passport_1.default.use(new passport_local_1.Strategy((username, password, done) => {
     const user = db.getUserByUsername(username);
-    if (!user || user.password !== password) {
-        return done(null, false); // Wrong username or password
+    if (!user) {
+        return done(null, false, { message: 'Username not found' });
     }
-    return done(null, user); // Successful authentication
+    if (user.password !== password) {
+        return done(null, false, { message: 'Incorrect password' });
+    }
+    return done(null, user);
 }));
 passport_1.default.serializeUser((user, done) => {
     done(null, user.id); // Cast user to User type

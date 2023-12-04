@@ -8,15 +8,21 @@ interface User {
   password: string;
 }
 
-passport.use(new LocalStrategy(
-  (username, password, done) => {
-      const user = db.getUserByUsername(username);
-      if (!user || user.password !== password) {
-          return done(null, false); // Wrong username or password
-      }
-      return done(null, user); // Successful authentication
+passport.use(new LocalStrategy({
+  usernameField: 'uname',
+  passwordField: 'password'
+},
+(username, password, done) => {
+  console.log(`Username: ${username}, Password: ${password}`); // Debug print
+  const user = db.getUserByUsername(username);
+  if (!user || user.password !== password) {
+    return done(null, false, { message: 'Incorrect username or password.' });
   }
+  return done(null, user);
+}
 ));
+
+
 
 
 

@@ -43,6 +43,15 @@ exports.posts = {
         subgroup: "coding",
         timestamp: 1642611742010,
     },
+    103: {
+        id: 103,
+        title: "pixel*",
+        link: "https://leerob.io/blog/backend",
+        description: "new pixel 8 coming.",
+        creator: 4,
+        subgroup: "technology",
+        timestamp: 1642611742023,
+    },
 };
 // const comments: Record<number, Comment> = {
 //   9001: {
