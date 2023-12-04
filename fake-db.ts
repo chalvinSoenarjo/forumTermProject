@@ -14,9 +14,12 @@ interface Post {
   link: string;
   description: string;
   creator: number;
+  creatorName?: string; // Add this line
   subgroup: string;
   timestamp: number;
-  comments?: Comment[]; // Make the comments property optional
+  comments?: Comment[]; // Detailed comments
+  detailedComments?: Comment[]; // Add this line
+  
 
 
 }
@@ -101,6 +104,8 @@ export const posts: Record<number, Post> = {
 //   },
 // };
 
+
+
 const comments: Comment[] = [
   {
     id: 1,
@@ -137,35 +142,63 @@ function getVotesForPost(post_id: number): Vote[] {
 function decoratePost(post: Post): Post {
   const decoratedPost: Post = {
     ...post,
-    creator: users[post.creator]?.id ?? 0,
-    comments: [], // Initialize comments as an empty array
-
+    creatorName: users[post.creator]?.uname ?? 'Unknown',
   };
 
-  // Filter and map comments that match the post's ID
-  decoratedPost.comments = Object.values(comments)
-    .filter((comment) => comment.post_id === post.id)
-    .map((comment) => ({
-      ...comment,
-      creator: users[comment.creator]?.id ?? 0, // Update the creator to match User ID
-    }));
+  if (post.comments) {
+    decoratedPost.detailedComments = post.comments
+      .filter(commentId => typeof commentId === 'number')
+      .flatMap(commentId => {
+        // Ensure commentId is numeric
+        const numericCommentId = Number(commentId);
+        if (isNaN(numericCommentId)) {
+          return [];
+        }
+
+        const comment = comments.find(comment => comment.id === numericCommentId);
+        return comment ? [comment] : [];
+      });
+  } else {
+    decoratedPost.detailedComments = [];
+  }
 
   return decoratedPost;
 }
 
 
- function getPosts(n: number = 5, sub?: string): Post[] {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getPosts(n: number = 5, sub?: string): Post[] {
   let allPosts = Object.values(posts);
   if (sub) {
-    allPosts = allPosts.filter((post) => post.subgroup === sub);
+      allPosts = allPosts.filter(post => post.subgroup === sub);
   }
   allPosts.sort((a, b) => b.timestamp - a.timestamp);
-  return allPosts.slice(0, n);
+  return allPosts.slice(0, n).map(post => decoratePost(post));
 }
 
+// In fake-db.ts
+
 function getPost(id: number): Post | undefined {
-  return decoratePost(posts[id]);
+  let post = posts[id];
+  if (post) {
+      return decoratePost(post);
+  }
+  return undefined;
 }
+
 
 function addPost(title: string, link: string, creator: number, description: string, subgroup: string): Post {
   let id = Math.max(...Object.keys(posts).map(Number)) + 1;

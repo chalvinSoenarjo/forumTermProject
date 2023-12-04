@@ -93,27 +93,34 @@ function getVotesForPost(post_id) {
 exports.getVotesForPost = getVotesForPost;
 function decoratePost(post) {
     var _a, _b;
-    const decoratedPost = Object.assign(Object.assign({}, post), { creator: (_b = (_a = users[post.creator]) === null || _a === void 0 ? void 0 : _a.id) !== null && _b !== void 0 ? _b : 0, comments: [] });
-    // Filter and map comments that match the post's ID
-    decoratedPost.comments = Object.values(comments)
-        .filter((comment) => comment.post_id === post.id)
-        .map((comment) => {
-        var _a, _b;
-        return (Object.assign(Object.assign({}, comment), { creator: (_b = (_a = users[comment.creator]) === null || _a === void 0 ? void 0 : _a.id) !== null && _b !== void 0 ? _b : 0 }));
-    });
+    const decoratedPost = Object.assign(Object.assign({}, post), { creatorName: (_b = (_a = users[post.creator]) === null || _a === void 0 ? void 0 : _a.uname) !== null && _b !== void 0 ? _b : 'Unknown' });
+    if (post.comments) {
+        decoratedPost.detailedComments = post.comments.flatMap(commentId => {
+            const comment = comments.find(comment => (comment === null || comment === void 0 ? void 0 : comment.id) === commentId);
+            return comment ? [comment] : [];
+        });
+    }
+    else {
+        decoratedPost.detailedComments = [];
+    }
     return decoratedPost;
 }
 function getPosts(n = 5, sub) {
     let allPosts = Object.values(exports.posts);
     if (sub) {
-        allPosts = allPosts.filter((post) => post.subgroup === sub);
+        allPosts = allPosts.filter(post => post.subgroup === sub);
     }
     allPosts.sort((a, b) => b.timestamp - a.timestamp);
-    return allPosts.slice(0, n);
+    return allPosts.slice(0, n).map(post => decoratePost(post));
 }
 exports.getPosts = getPosts;
+// In fake-db.ts
 function getPost(id) {
-    return decoratePost(exports.posts[id]);
+    let post = exports.posts[id];
+    if (post) {
+        return decoratePost(post);
+    }
+    return undefined;
 }
 exports.getPost = getPost;
 function addPost(title, link, creator, description, subgroup) {

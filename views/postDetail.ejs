@@ -1,0 +1,26 @@
+<!-- Within the postDetail.ejs file -->
+<form action="/posts/comment-create/<%= post.id %>" method="post">
+    <textarea name="description" placeholder="Your comment"></textarea>
+    <button type="submit">Add Comment</button>
+
+
+
+
+</form>
+
+<h3>Comments:</h3>
+<% if (post.comments) { %>
+  <% post.comments.forEach(comment => { %>
+      <div class="comment">
+          <p><%= comment.description %></p>
+          <p>Comment by User ID: <%= comment.creator %></p>
+      </div>
+  <% }); %>
+<% } else { %>
+  <p>No comments yet.</p>
+<% } %>
+
+
+<a role="button" href="/posts">Home</a>
+
+

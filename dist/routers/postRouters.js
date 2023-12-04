@@ -64,11 +64,16 @@ router.post("/create", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(
         // Handle the error, maybe render an error page or redirect with an error message
     }
 }));
-// Display individual post
-router.get("/show/:postid", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const post = database.getPost(req.params.postid);
-    res.render("individualPost", { post });
-}));
+router.get('/show/:postid', checkAuth_1.ensureAuthenticated, (req, res) => {
+    const post = db.getPost(req.params.postid);
+    res.render('postDetail', { post });
+});
+router.post('/comment-create/:postid', checkAuth_1.ensureAuthenticated, (req, res) => {
+    const { description } = req.body;
+    const creatorId = req.user.id; // Assuming you have the user's ID in req.user
+    db.addComment(req.params.postid, creatorId, description);
+    res.redirect('/posts/show/' + req.params.postid); // Redirect back to the post
+});
 // GET route for edit post form
 router.get('/edit/:postid', checkAuth_1.ensureAuthenticated, (req, res) => {
     const post = db.getPost(req.params.postid);

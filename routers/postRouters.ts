@@ -35,11 +35,19 @@ router.post("/create", ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Display individual post
-router.get("/show/:postid", async (req, res) => {
-  const post = database.getPost(req.params.postid);
-  res.render("individualPost", { post });
+router.get('/show/:postid', ensureAuthenticated, (req, res) => {
+  const post = db.getPost(req.params.postid);
+  res.render('postDetail', { post });
 });
+
+router.post('/comment-create/:postid', ensureAuthenticated, (req, res) => {
+  const { description } = req.body;
+  const creatorId = req.user.id; // Assuming you have the user's ID in req.user
+
+  db.addComment(req.params.postid, creatorId, description);
+  res.redirect('/posts/show/' + req.params.postid); // Redirect back to the post
+});
+
 
 // GET route for edit post form
 router.get('/edit/:postid', ensureAuthenticated, (req, res) => {

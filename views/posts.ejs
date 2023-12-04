@@ -1,52 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.classless.min.css" />
-    <link href="/css/style.css" rel="stylesheet" />
-    <title>Homepage</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.classless.min.css" />
+  <link href="/css/style.css" rel="stylesheet" />
+  <title>Homepage</title>
 </head>
+
 <body>
-    <nav>
-        <!-- other navigation links -->
-        <a href="/auth/signup">Signup</a>
-    </nav>
-    <main>
-        <div class="authOptions">
-            <h1>Homepage</h1>
-            <% if (!user) { %>
-                <a role="button" href="/auth/login">Login</a>
-            <% } else { %>
-                <a role="button" href="/auth/logout">Logout</a>
+  <nav>
+    <!-- other navigation links -->
+    <a href="/auth/signup">Signup</a>
+  </nav>
+  <main>
+    <div class="authOptions">
+      <h1>Homepage</h1>
+      <% if (!user) { %>
+        <a role="button" href="/auth/login">Login</a>
+        <% } else { %>
+          <a role="button" href="/auth/logout">Logout</a>
+          <% } %>
+    </div>
+    <h2>Welcome, <%= user?.uname || "Visitor" %>
+    </h2>
+    <div>
+      <p>All Posts</p>
+      <% posts.forEach(post=> { %>
+        <!-- Inside the loop that iterates through posts -->
+        <div class="individualPost">
+          <a href="/posts/show/<%= post.id %>">
+            <%= post.title %>
+          </a>
+          <p>
+            <%= post.description %>
+          </p>
+          <!-- Check if logged-in user is the creator of the post -->
+          <% if (user && user.id===post.creator) { %>
+            <a href="/posts/edit/<%= post.id %>">Edit</a>
             <% } %>
-        </div>
-        <h2>Welcome, <%= user?.uname || "Visitor" %></h2>
-        <div>
-            <p>All Posts</p>
-            <% posts.forEach(post => { %>
-                <div class="individualPost">
-                    <a href="/posts/show/<%= post.id %>"><%= post.title %></a>
-                    <p><%= post.description %></p>
-                    <!-- Check if logged-in user is the creator of the post -->
-                    <% if (user && user.id === post.creator) { %>
-                        <a href="/posts/edit/<%= post.id %>">Edit</a>
-                       
-                    <% } %>
-                </div>
-            <% }) %>
-        </div>
 
-        <div>
-            <a href="/subs/list">Subgroups</a>
-        </div>
+              <!-- Add Comment button -->
+              <button class="add-comment-button" data-post-id="<%= post.id %>">Add Comment</button>
 
-        <% if (user) { %>
-            <div>
-                <a role="button" href="/posts/create">Create Post</a>
-            </div>
-        <% } %>
-    </main>
+              <!-- Comments section (hidden by default) -->
+              <div class="comments-section" id="comments-section-<%= post.id %>">
+                <!-- Display comments here -->
+              </div>
+        </div>
+        <!-- End of post iteration -->
+
+        <% }) %>
+    </div>
+
+    <div>
+      <a href="/subs/list">Subgroups</a>
+    </div>
+
+    <% if (user) { %>
+      <div>
+        <a role="button" href="/posts/create">Create Post</a>
+      </div>
+      <% } %>
+
+  </main>
 </body>
+
 </html>
+
+<script>
+  // Function to handle "Add Comment" button click
+  document.querySelectorAll('.add-comment-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const postId = button.getAttribute('data-post-id');
+      const commentsSection = document.getElementById(`comments-section-${postId}`);
+      commentsSection.innerHTML = `
+              <input type="text" id="comment-input-${postId}" placeholder="Enter your comment">
+              <button onclick="addComment(${postId})">Submit</button>
+          `;
+    });
+  });
+
+  // Function to add a comment
+  function addComment(postId) {
+    const commentInput = document.getElementById(`comment-input-${postId}`);
+    const commentText = commentInput.value;
+    // You can send the commentText to your server to save the comment in the database
+    // After saving, you can display the comment in the comments section
+    // For now, let's just display it here
+    const commentsSection = document.getElementById(`comments-section-${postId}`);
+    commentsSection.innerHTML += `<p>${commentText}</p>`;
+    // Clear the comment input field
+    commentInput.value = '';
+  }
+</script>
