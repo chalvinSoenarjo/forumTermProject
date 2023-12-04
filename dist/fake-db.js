@@ -1,7 +1,7 @@
 "use strict";
+// fake-db.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.decoratePost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.debug = void 0;
-// @ts-nocheck
+exports.getVotesForPost = exports.addComment = exports.getSubs = exports.deletePost = exports.editPost = exports.addPost = exports.getPost = exports.getPosts = exports.getUserByUsername = exports.getUser = exports.validateUser = exports.posts = void 0;
 const users = {
     1: {
         id: 1,
@@ -24,7 +24,7 @@ const users = {
         password: "123",
     },
 };
-const posts = {
+exports.posts = {
     101: {
         id: 101,
         title: "Mochido opens its new location in Coquitlam this week",
@@ -44,54 +44,58 @@ const posts = {
         timestamp: 1642611742010,
     },
 };
-const comments = {
-    9001: {
-        id: 9001,
-        post_id: 102,
-        creator: 1,
-        description: "Actually I learned a lot :pepega:",
+// const comments: Record<number, Comment> = {
+//   9001: {
+//     id: 9001,
+//     post_id: 102,
+//     creator: 1,
+//     description: "Actually I learned a lot :pepega:",
+//     timestamp: 1642691742010,
+//   },
+// };
+const comments = [
+    {
+        id: 1,
+        post_id: 101,
+        creator: 1, // Change this to the user's ID (a number)
+        description: "This is a comment",
         timestamp: 1642691742010,
     },
-};
+    // Other comments...
+];
 const votes = [
     { user_id: 2, post_id: 101, value: +1 },
     { user_id: 3, post_id: 101, value: +1 },
     { user_id: 4, post_id: 101, value: +1 },
     { user_id: 3, post_id: 102, value: -1 },
 ];
-function debug() {
-    console.log("==== DB DEBUGING ====");
-    console.log("users", users);
-    console.log("posts", posts);
-    console.log("comments", comments);
-    console.log("votes", votes);
-    console.log("==== DB DEBUGING ====");
-}
-exports.debug = debug;
 function getUser(id) {
     return users[id];
 }
 exports.getUser = getUser;
 function getUserByUsername(uname) {
-    return getUser(Object.values(users).filter((user) => user.uname === uname)[0].id);
+    var _a, _b;
+    return getUser((_b = (_a = Object.values(users).find((user) => user.uname === uname)) === null || _a === void 0 ? void 0 : _a.id) !== null && _b !== void 0 ? _b : 0);
 }
 exports.getUserByUsername = getUserByUsername;
 function getVotesForPost(post_id) {
     return votes.filter((vote) => vote.post_id === post_id);
 }
+exports.getVotesForPost = getVotesForPost;
 function decoratePost(post) {
-    post = Object.assign(Object.assign({}, post), { creator: users[post.creator], votes: getVotesForPost(post.id), comments: Object.values(comments)
-            .filter((comment) => comment.post_id === post.id)
-            .map((comment) => (Object.assign(Object.assign({}, comment), { creator: users[comment.creator] }))) });
-    return post;
+    var _a, _b;
+    const decoratedPost = Object.assign(Object.assign({}, post), { creator: (_b = (_a = users[post.creator]) === null || _a === void 0 ? void 0 : _a.id) !== null && _b !== void 0 ? _b : 0, comments: [] });
+    // Filter and map comments that match the post's ID
+    decoratedPost.comments = Object.values(comments)
+        .filter((comment) => comment.post_id === post.id)
+        .map((comment) => {
+        var _a, _b;
+        return (Object.assign(Object.assign({}, comment), { creator: (_b = (_a = users[comment.creator]) === null || _a === void 0 ? void 0 : _a.id) !== null && _b !== void 0 ? _b : 0 }));
+    });
+    return decoratedPost;
 }
-exports.decoratePost = decoratePost;
-/**
- * @param {*} n how many posts to get, defaults to 5
- * @param {*} sub which sub to fetch, defaults to all subs
- */
-function getPosts(n = 5, sub = undefined) {
-    let allPosts = Object.values(posts);
+function getPosts(n = 5, sub) {
+    let allPosts = Object.values(exports.posts);
     if (sub) {
         allPosts = allPosts.filter((post) => post.subgroup === sub);
     }
@@ -100,26 +104,26 @@ function getPosts(n = 5, sub = undefined) {
 }
 exports.getPosts = getPosts;
 function getPost(id) {
-    return decoratePost(posts[id]);
+    return decoratePost(exports.posts[id]);
 }
 exports.getPost = getPost;
 function addPost(title, link, creator, description, subgroup) {
-    let id = Math.max(...Object.keys(posts).map(Number)) + 1;
+    let id = Math.max(...Object.keys(exports.posts).map(Number)) + 1;
     let post = {
         id,
         title,
         link,
         description,
-        creator: Number(creator),
+        creator,
         subgroup,
         timestamp: Date.now(),
     };
-    posts[id] = post;
+    exports.posts[id] = post;
     return post;
 }
 exports.addPost = addPost;
 function editPost(post_id, changes = {}) {
-    let post = posts[post_id];
+    let post = exports.posts[post_id];
     if (changes.title) {
         post.title = changes.title;
     }
@@ -135,19 +139,19 @@ function editPost(post_id, changes = {}) {
 }
 exports.editPost = editPost;
 function deletePost(post_id) {
-    delete posts[post_id];
+    delete exports.posts[post_id];
 }
 exports.deletePost = deletePost;
 function getSubs() {
-    return Array.from(new Set(Object.values(posts).map((post) => post.subgroup)));
+    return Array.from(new Set(Object.values(exports.posts).map((post) => post.subgroup)));
 }
 exports.getSubs = getSubs;
 function addComment(post_id, creator, description) {
     let id = Math.max(...Object.keys(comments).map(Number)) + 1;
     let comment = {
         id,
-        post_id: Number(post_id),
-        creator: Number(creator),
+        post_id,
+        creator,
         description,
         timestamp: Date.now(),
     };
@@ -155,4 +159,9 @@ function addComment(post_id, creator, description) {
     return comment;
 }
 exports.addComment = addComment;
+function validateUser(uname, password) {
+    const user = Object.values(users).find((user) => user.uname === uname);
+    return user && user.password === password ? user : null;
+}
+exports.validateUser = validateUser;
 //# sourceMappingURL=fake-db.js.map

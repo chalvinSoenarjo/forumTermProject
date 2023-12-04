@@ -32,26 +32,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserById = exports.getUserByEmailIdAndPassword = void 0;
+exports.validateUser = exports.getUserByUsername = void 0;
 const db = __importStar(require("../fake-db"));
-const getUserByEmailIdAndPassword = (uname, password) => __awaiter(void 0, void 0, void 0, function* () {
-    let user = db.getUserByUsername(uname);
-    if (user) {
-        if (user.password === password) {
-            return user;
-        }
-        else {
-            return null;
-        }
-    }
+const getUserByUsername = (uname) => __awaiter(void 0, void 0, void 0, function* () {
+    return db.getUserByUsername(uname);
 });
-exports.getUserByEmailIdAndPassword = getUserByEmailIdAndPassword;
-const getUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    let user = db.getUser(id);
-    if (user) {
-        return user;
-    }
-    return null;
+exports.getUserByUsername = getUserByUsername;
+const validateUser = (uname, password) => __awaiter(void 0, void 0, void 0, function* () {
+    return db.validateUser(uname, password);
 });
-exports.getUserById = getUserById;
+exports.validateUser = validateUser;
 //# sourceMappingURL=userController.js.map

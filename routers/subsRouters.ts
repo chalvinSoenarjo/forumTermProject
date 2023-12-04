@@ -1,16 +1,17 @@
-// const { ensureAuthenticated } = require("../middleware/checkAuth");
 import express from "express";
-import * as database from "../controller/postController";
+import * as db from "../fake-db";
+
 const router = express.Router();
 
 router.get("/list", async (req, res) => {
-  // ⭐ TODO
-  res.render("subs");
+  const subs = db.getSubs();
+  res.render("subsList", { subs });
 });
 
 router.get("/show/:subname", async (req, res) => {
-  // ⭐ TODO
-  res.render("sub");
+  const subname = req.params.subname;
+  const posts = db.getPosts(20, subname);
+  res.render("subPosts", { posts });
 });
 
 export default router;

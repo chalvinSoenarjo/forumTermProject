@@ -38,37 +38,63 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // @ts-nocheck
 const express_1 = __importDefault(require("express"));
 const database = __importStar(require("../controller/postController"));
-const router = express_1.default.Router();
 const checkAuth_1 = require("../middleware/checkAuth");
+const router = express_1.default.Router();
+// List posts
 router.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const posts = yield database.getPosts(20);
-    const user = yield req.user;
+    const user = req.user;
     res.render("posts", { posts, user });
 }));
+// Create post form
 router.get("/create", checkAuth_1.ensureAuthenticated, (req, res) => {
     res.render("createPosts");
 });
+// Handle post creation
 router.post("/create", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
+    const { title, link, description, subgroup } = req.body;
+    const creator = req.user.id;
+    database.addPost(title, link, creator, description, subgroup);
+    res.redirect('/posts');
 }));
+// Display individual post
 router.get("/show/:postid", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
-    res.render("individualPost");
+    const post = database.getPost(req.params.postid);
+    res.render("individualPost", { post });
 }));
+// Edit post form
 router.get("/edit/:postid", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
+    const post = database.getPost(req.params.postid);
+    if (req.user.id !== post.creator.id) {
+        return res.status(403).send("Unauthorized");
+    }
+    res.render("editPost", { post });
 }));
+// Handle post editing
 router.post("/edit/:postid", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
+    const { title, link, description, subgroup } = req.body;
+    database.editPost(req.params.postid, { title, link, description, subgroup });
+    res.redirect(`/posts/show/${req.params.postid}`);
 }));
+// Confirm delete post
 router.get("/deleteconfirm/:postid", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
+    const post = database.getPost(req.params.postid);
+    if (req.user.id !== post.creator.id) {
+        return res.status(403).send("Unauthorized");
+    }
+    res.render("deletePostConfirm", { post });
 }));
+// Handle post deletion
 router.post("/delete/:postid", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
+    database.deletePost(req.params.postid);
+    res.redirect('/posts');
 }));
+// Handle comment creation
 router.post("/comment-create/:postid", checkAuth_1.ensureAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // ⭐ TODO
+    const { description } = req.body;
+    const creator = req.user.id;
+    database.addComment(req.params.postid, creator, description);
+    res.redirect(`/posts/show/${req.params.postid}`);
 }));
 exports.default = router;
 //# sourceMappingURL=postRouters.js.map

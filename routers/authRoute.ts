@@ -8,10 +8,11 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", passport.authenticate("local", {
-    successRedirect: "/posts",
-    failureRedirect: "/auth/login",
-    failureFlash: false
+    successRedirect: "/posts", // Redirect here after successful login
+    failureRedirect: "/auth/login", // Redirect back to login on failure
+    failureFlash: false // Set this to true if you're using flash messages
 }));
+
 
 router.get("/logout", (req, res) => {
     req.logout(() => {});

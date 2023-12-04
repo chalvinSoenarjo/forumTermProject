@@ -22,23 +22,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPosts = void 0;
+exports.getPosts = exports.getSubs = void 0;
 const db = __importStar(require("../fake-db"));
-// Make calls to your db from this file!
-function getPosts(n = 5, sub = undefined) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return db.getPosts(n, sub);
+// Function to get a list of all subgroups
+function getSubs() {
+    const subgroups = new Set();
+    Object.values(db.posts).forEach((post) => {
+        subgroups.add(post.subgroup);
     });
+    return Array.from(subgroups);
+}
+exports.getSubs = getSubs;
+// Function to get posts, optionally filtered by a subgroup
+function getPosts(n, sub) {
+    let allPosts = Object.values(db.posts);
+    if (sub) {
+        allPosts = allPosts.filter((post) => post.subgroup === sub);
+    }
+    allPosts.sort((a, b) => b.timestamp - a.timestamp);
+    return allPosts.slice(0, n);
 }
 exports.getPosts = getPosts;
+// Add other necessary functions here (e.g., addPost, getPost, etc.)
+// Make sure to export them
 //# sourceMappingURL=postController.js.map

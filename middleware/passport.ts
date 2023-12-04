@@ -1,42 +1,35 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import {
-  getUserByEmailIdAndPassword,
-  getUserById,
-} from "../controller/userController";
+import * as db from "../fake-db";
 
-// ⭐ TODO: Passport Types
-const localLogin = new LocalStrategy(
-  {
-    usernameField: "uname",
-    passwordField: "password",
-  },
-  async (uname: any, password: any, done: any) => {
-    // Check if user exists in databse
-    const user = await getUserByEmailIdAndPassword(uname, password);
-    // console.log('passport 13: '+ user.uname);
-    return user
-      ? done(null, user)
-      : done(null, false, {
-          message: "Your login details are not valid. Please try again.",
-        });
+interface User {
+  id: number;
+  uname: string;
+  password: string;
+}
+
+passport.use(new LocalStrategy(
+  (username, password, done) => {
+      const user = db.getUserByUsername(username);
+      if (!user || user.password !== password) {
+          return done(null, false); // Wrong username or password
+      }
+      return done(null, user); // Successful authentication
   }
-);
+));
 
-// ⭐ TODO: Passport Types
-passport.serializeUser(function (user: any, done: any) {
-  console.log("serialize: " + user.id);
-  done(null, user.id);
+
+
+passport.serializeUser((user: User | Express.User, done) => {
+  done(null, (user as User).id); // Cast user to User type
 });
 
-// ⭐ TODO: Passport Types
-passport.deserializeUser(function (id: any, done: any) {
-  const user = getUserById(id);
-  if (user) {
-    done(null, user);
-  } else {
-    done({ message: "User not found" }, null);
+passport.deserializeUser((id, done) => {
+  const user = db.getUser(id as number) as User; // Cast id to number
+  if (!user) {
+    return done(new Error("User not found"));
   }
+  done(null, user);
 });
 
-export default passport.use(localLogin);
+export default passport;
